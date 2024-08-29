@@ -1,14 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Document</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube 登入和播放清單</title>
+    <style>
+        #player {
+            width: 100%;
+            height: 500px;
+        }
+    </style>
 </head>
 <body>
-	<div>A</div>
-	<div>B</div>
-	<div>C</div>
-	<div>D</div>
+    <h1>YouTube 播放清單</h1>
+    <button id="authorize_button">登入</button>
+    <div id="player"></div>
+
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script>
+        // 替換成你的 OAuth 2.0 客戶端 ID
+        const CLIENT_ID = '995457362416-mjt5s7jp0esa1vfh0v0kuj72im7timng.apps.googleusercontent.com';
+        const API_KEY = 'AIzaSyDYwOcJCehUqK0b-mDLZknzzUBXHC472mc';
+        const SCOPES = 'https://www.googleapis.com/auth/youtube.readonly';
+
+        let player;
+
+        function handleClientLoad() {
+            gapi.load('client:auth2', initClient);
+        }
+
+        function initClient() {
+            gapi.client.init({
+                apiKey: API_KEY,
+                clientId: CLIENT_ID,
+                discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest"],
+                scope: SCOPES
+            }).then(function () {
+                gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+                updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+                document.getElementById('authorize_button').addEventListener('click', handleAuthClick);
+            });
+        }
+
+        function updateSigninStatus(isSignedIn) {
+            if (isSignedIn) {
+                loadPlaylist();
+            }
+        }
+
+        function handleAuthClick(event) {
+            gapi.auth2.getAuthInstance().signIn();
+        }
+
+        function loadPlaylist() {
+            gapi.client.youtube.playlists.list({
+                part: 'snippet,contentDetails',
+                mine: true
+            }).then(function(response) {
+                // 處理你的播放清單
+                console.log(response.result);
+                // 這裡可以進一步獲取播放清單中的視頻並使用 YT.Player 播放
+            });
+        }
+
+        handleClientLoad();
+    </script>
 </body>
 </html>
